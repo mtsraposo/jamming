@@ -12,7 +12,8 @@ class TrackList extends React.Component {
             return <div>No tracks yet</div>
         } else {
             return this.props.tracks.map((track) => {
-                return (<Track onAdd={this.props.onAdd}
+                return (<Track key={track.id}
+                               onAdd={this.props.onAdd}
                                onRemove={this.props.onRemove}
                                track={track}
                                isRemoval={this.props.isRemoval}
@@ -22,7 +23,6 @@ class TrackList extends React.Component {
     }
 
     render() {
-        console.log(this.props);
         return (
             <div className="TrackList">
                 {this.genTrackList()}

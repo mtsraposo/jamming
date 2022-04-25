@@ -24,6 +24,13 @@ class App extends React.Component {
         };
         this.addTrack = this.addTrack.bind(this);
         this.removeTrack = this.removeTrack.bind(this);
+        this.updatePLaylistName = this.updatePLaylistName.bind(this);
+    }
+
+    updatePLaylistName(name) {
+        this.setState({
+            name: name
+        });
     }
 
     _getTrackIndexById(id) {
@@ -66,6 +73,7 @@ class App extends React.Component {
             tracks: this.state.playlistTracks,
             onRemove: this.removeTrack,
             isRemoval: true,
+            onNameChange: this.updatePLaylistName,
         }
 
         return (
