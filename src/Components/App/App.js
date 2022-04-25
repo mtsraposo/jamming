@@ -32,23 +32,23 @@ class App extends React.Component {
         if (!(track.id in trackIds)) {
             this.state.playlistTracks.push(track);
         }
-        return this.state.playlistTracks;
     }
 
     render() {
-        console.log(this.state.playlistTracks);
+        console.log(this.state);
         return (
             <div>
                 <h1>Ja<span className="highlight">mmm</span>ing</h1>
                 <div className="App">
                     <SearchBar/>
                     <div className="App-playlist">
-                        <SearchResults props={{searchResults: this.state.searchResults}}
-                                       onAdd={this.addTrack}/>
-                        <Playlist props={{
-                            name: this.state.playlistName,
-                            tracks: this.state.playlistTracks
-                        }}/>
+                        <SearchResults searchResults={this.state.searchResults}
+                                       onAdd={this.addTrack}
+                                       isRemoval={false}/>
+                        <Playlist name={this.state.playlistName}
+                                  tracks={this.state.playlistTracks}
+                                  onAdd={this.addTrack}
+                                  isRemoval={true}/>
                     </div>
                 </div>
             </div>
