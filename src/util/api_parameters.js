@@ -4,7 +4,8 @@ import {clientId} from "./credentials";
 export const apiParams = {
     client_id: clientId,
     redirect_uri: 'http://localhost:3000',
-    scope: 'user-read-private user-read-email',
+    scope: 'playlist-modify-public',
     state: generateRandomString(16),
-    url: 'https://accounts.spotify.com/authorize',
+    auth_url: 'https://accounts.spotify.com/authorize',
+    track_url: 'https://api.spotify.com/v1/search',
 }

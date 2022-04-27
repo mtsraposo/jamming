@@ -1,44 +1,107 @@
-import {apiParams} from "./api_parameters";
-
 let accessToken;
 
-const Spotify = {}
+const Spotify = {
+    buildAccessTokenUrl(apiParams) {
+        let url = apiParams.auth_url;
+        url += '?client_id=' + encodeURIComponent(apiParams.client_id);
+        url += '&response_type=token';
+        url += '&scope=' + encodeURIComponent(apiParams.scope);
+        url += '&redirect_uri=' + encodeURIComponent(apiParams.redirect_uri);
+        url += '&state=' + encodeURIComponent(apiParams.state);
+        window.location = url;
+        return url;
+    },
 
-const buildQueryUrl = (apiParams) => {
-    let url = apiParams.url;
-    url += '?response_type=token';
-    url += '&client_id=' + encodeURIComponent(apiParams.client_id);
-    url += '&scope=' + encodeURIComponent(apiParams.scope);
-    url += '&redirect_uri=' + encodeURIComponent(apiParams.redirect_uri);
-    url += '&state=' + encodeURIComponent(apiParams.state);
-    return url;
-}
+    parseResponseUrl(response) {
+        const accessToken = window.location.href.match("/access_token=([^&]*)/");
+        const expirationTime = window.location.href.match("/expires_in=([^&]*)/");
 
+        return {
+            accessToken: accessToken ? accessToken[0] : null,
+            expirationTime: expirationTime ? expirationTime[0] : null,
+        };
+    },
 
-const getAccessToken = async (apiParams) => {
-    if (accessToken) {
-        return accessToken;
-    } else {
-        const url = buildQueryUrl(apiParams);
-        const responseUrl = await fetch(url);
+    setResponseVariables(response) {
+        window.localStorage.setItem("accessToken", accessToken);
+        let expirationTime = response.expirationTime;
 
-        const accessTokenQuery = responseUrl.split('#')[1].split('&')[0]
-        const accessToken = accessTokenQuery.split('=')[1];
+        window.setTimeout(() => {
+            window.localStorage.removeItem('accessToken');
+        }, expirationTime * 1000);
 
-        const expirationTime = responseUrl.split('&').find((attr_value) => attr_value.split('=')[0] === "expires_in");
+        window.history.pushState('Access Token', null, '/');
+    },
 
-        if (accessToken && expirationTime) {
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('expirationTime', expirationTime);
+    assignToken(response) {
+        if (response.accessToken && response.expirationTime) {
+            this.setResponseVariables(response);
+        }
+    },
 
-            setTimeout(() => {
-                localStorage.removeItem('expirationTime');
-            }, expirationTime)
+    async getAccessToken(apiParams) {
+        if (window.localStorage.getItem("accessToken")) {
+            return Promise.resolve(accessToken);
+        } else {
+            const authUrl = this.buildAccessTokenUrl(apiParams);
+            const response = await fetch(authUrl)
+                .then(this._checkResponse)
+                .then(this.parseResponseUrl)
+                .then(this.assignToken);
+            return response.resolve(accessToken);
+        }
+    },
 
+    _checkResponse(response) {
+        console.log(response);
+        if (!response.ok) {
+            throw new Error('Request unsuccessful');
+        }
+        return response.json();
+    },
+
+    _parseResponse(response) {
+        let tracks = [];
+
+        if (!response.tracks) {
+            return tracks;
         }
 
+        tracks = response.tracks.map(track => {
+            return {
+                id: track.id,
+                name: track.name,
+                artist: track.artists[0],
+                album: track.album.name,
+                uri: track.uri,
+            };
+        });
 
-    }
+        return Promise.resolve(tracks);
+    },
+
+    async search(apiParams, term) {
+        let track_url = `${apiParams.track_url}`;
+        track_url += '?type=track';
+        track_url += `&q=${term}`;
+
+        await this.getAccessToken(apiParams)
+            .then(token => {
+                window.localStorage.setItem("accessToken", token);
+            });
+
+        const headers = {
+            Authorization: `Bearer ${window.localStorage.getItem("accessToken")}`,
+        };
+
+        const response = await fetch(track_url, {headers: headers})
+            .then(this._checkResponse)
+            .then(this._parseResponse);
+
+        console.log(response);
+
+        return response;
+    },
 }
 
 export default Spotify;
