@@ -10,22 +10,9 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            searchResults: [{
-                id: '1',
-                name: 'Not Afraid',
-                artist: 'Eminem',
-                album: 'Recovery',
-                uri: '',
-            }],
-            playlistName: 'myPlaylist',
-            playlistTracks: [{
-                id: '1',
-                name: 'Not Afraid',
-                artist: 'Eminem',
-                album: 'Recovery',
-                uri: '',
-
-            }]
+            searchResults: [],
+            playlistName: 'New Playlist',
+            playlistTracks: [],
         };
         this.addTrack = this.addTrack.bind(this);
         this.removeTrack = this.removeTrack.bind(this);
@@ -55,13 +42,14 @@ class App extends React.Component {
     }
 
     _getTrackIndexById(id) {
-        return this.state.playlistTracks.findIndex((track) => track.id === id);
+        return this.state.searchResults.findIndex((track) => track.id === id);
     }
 
-    addTrack(track) {
-        const trackInList = !this._getTrackIndexById(track.id);
+    addTrack(trackId) {
+        const trackIndex = this._getTrackIndexById(trackId);
 
-        if (!trackInList) {
+        if (trackIndex !== -1) {
+            const track = this.state.searchResults[trackIndex];
             const afterInclusion = [...this.state.playlistTracks];
             afterInclusion.push(track);
 
@@ -71,11 +59,12 @@ class App extends React.Component {
         }
     }
 
-    removeTrack(track) {
-        const trackIndex = this._getTrackIndexById(track.id);
+    removeTrack(trackId) {
+        const trackIndex = this._getTrackIndexById(trackId);
+        const track = this.state.playlistTracks[trackIndex];
 
         const afterDeletion = [...this.state.playlistTracks];
-        afterDeletion.splice(trackIndex);
+        afterDeletion.splice(track);
 
         this.setState({
             playlistTracks: afterDeletion

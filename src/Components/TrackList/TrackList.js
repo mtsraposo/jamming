@@ -8,8 +8,8 @@ class TrackList extends React.Component {
     }
 
     genTrackList() {
-        if (!this.props.tracks) {
-            return <div>No tracks yet</div>
+        if (this.props.tracks.length === 0) {
+            return <div>Add tracks to your playlist by using the search!</div>
         } else {
             return this.props.tracks.map((track) => {
                 return (<Track key={track.id}
