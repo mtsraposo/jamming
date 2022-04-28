@@ -3,7 +3,7 @@ import React from 'react';
 import SearchBar from "../SearchBar/SearchBar";
 import SearchResults from "../SearchResults/SearchResults";
 import Playlist from "../Playlist/Playlist";
-import Spotify from "../../util/Spotify";
+import {Spotify} from "../../util/Spotify";
 import {apiParams} from "../../util/api_parameters";
 
 class App extends React.Component {
@@ -11,17 +11,20 @@ class App extends React.Component {
         super(props);
         this.state = {
             searchResults: [{
-                id: 1,
+                id: '1',
                 name: 'Not Afraid',
                 artist: 'Eminem',
-                album: 'Recovery'
+                album: 'Recovery',
+                uri: '',
             }],
             playlistName: 'myPlaylist',
             playlistTracks: [{
-                id: 1,
+                id: '1',
                 name: 'Not Afraid',
                 artist: 'Eminem',
-                album: 'Recovery'
+                album: 'Recovery',
+                uri: '',
+
             }]
         };
         this.addTrack = this.addTrack.bind(this);
@@ -31,14 +34,13 @@ class App extends React.Component {
         this.search = this.search.bind(this);
     }
 
-    search(term) {
+    async search(term) {
         console.log('Searching: ', term);
-        Spotify.search(apiParams, term)
-            .then(tracks => {
-                this.setState({
-                    searchResults: tracks,
-                });
-            });
+        const tracks = await Spotify.search(apiParams, term);
+
+        this.setState({
+            searchResults: tracks,
+        });
     }
 
     savePlaylist() {
