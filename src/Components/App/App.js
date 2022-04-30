@@ -30,9 +30,13 @@ class App extends React.Component {
         });
     }
 
-    savePlaylist() {
-        const trackURIs = this.state.playlistTracks.map((track) => track.uri);
-        return trackURIs;
+    async savePlaylist() {
+        await Spotify.savePlaylist(this.state.playlistName, this.state.playlistTracks, apiParams);
+
+        this.setState({
+            playlistName: 'New Playlist',
+            playlistTracks: [],
+        });
     }
 
     updatePLaylistName(name) {
