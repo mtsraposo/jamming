@@ -5,6 +5,7 @@ import SearchResults from "../SearchResults/SearchResults";
 import Playlist from "../Playlist/Playlist";
 import {Spotify} from "../../util/Spotify";
 import {apiParams} from "../../util/api_parameters";
+import {SpotifyAuth} from "../../util/SpotifyAuth";
 
 class App extends React.Component {
     constructor(props) {
@@ -21,10 +22,12 @@ class App extends React.Component {
         this.search = this.search.bind(this);
     }
 
-    async search(term) {
-        console.log('Searching: ', term);
-        const tracks = await Spotify.search(apiParams, term);
+    async componentDidMount() {
+        await SpotifyAuth.getAccessToken(apiParams);
+    }
 
+    async search(term) {
+        const tracks = await Spotify.search(apiParams, term);
         this.setState({
             searchResults: tracks,
         });

@@ -1,5 +1,3 @@
-import {SpotifyAuth} from "./SpotifyAuth";
-
 export const Spotify = {
     async savePlaylist(name, trackURIs, apiParams) {
         if (!name || !trackURIs) {
@@ -12,28 +10,25 @@ export const Spotify = {
         }
     },
 
-    async _addTracksToPlaylist(trackURIs, apiParams, playlistId) {
-        const url = apiParams.add_to_playlist_url(playlistId);
-        const body = JSON.stringify({
-            uris: trackURIs,
-        });
-
-        const response = await fetch(url, {method: 'POST', body: body});
-        const responseJSON = await response.json();
-        return responseJSON['id'];
-    },
-
     async _createPlaylist(name, apiParams) {
         const userId = await this._getUserId(apiParams);
 
         const url = apiParams.create_playlist_url(userId);
         const body = this._buildSavePlaylistBody(name);
+        const headers = {...this._buildHeaders(), 'Content-Type': 'application/json'};
+
+        console.log(userId, url, body, headers);
 
         const response = await fetch(url,
-            {method: 'POST', body: body}
+            {method: 'POST', body: body, headers: headers}
         );
-        const responseJSON = await response.json();
-        return responseJSON['id'];
+
+        if (response.ok) {
+            const responseJSON = await response.json();
+            return responseJSON['id'];
+        } else {
+            throw new Error(`Response status: ${response.status}`);
+        }
     },
 
     async _getUserId(apiParams) {
@@ -48,19 +43,24 @@ export const Spotify = {
 
     _buildSavePlaylistBody(name) {
         return JSON.stringify({
-            name: name,
-            public: false,
-            collaborative: false,
-            description: 'created via API',
+            name: name
         });
+    },
+
+    async _addTracksToPlaylist(trackURIs, apiParams, playlistId) {
+        const url = apiParams.add_to_playlist_url(playlistId);
+        const body = JSON.stringify({
+            uris: trackURIs,
+        });
+
+        const response = await fetch(url, {method: 'POST', body: body});
+        const responseJSON = await response.json();
+        return responseJSON['id'];
     },
 
 
     async search(apiParams, term) {
         let track_url = this._buildTrackUrl(apiParams, term);
-
-        await SpotifyAuth.getAccessToken(apiParams);
-
         const headers = this._buildHeaders();
 
         const response = await fetch(track_url, {headers: headers});
@@ -72,7 +72,7 @@ export const Spotify = {
 
     _buildHeaders() {
         return {
-            Authorization: `Bearer ${window.localStorage.getItem("accessToken")}`,
+            'Authorization': `Bearer ${window.localStorage.getItem("accessToken")}`,
         };
     },
 

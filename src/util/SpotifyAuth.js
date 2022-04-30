@@ -1,26 +1,23 @@
 export const SpotifyAuth = {
 
     async getAccessToken(apiParams) {
+        this._parseAuthParams();
         if (!window.localStorage.getItem("accessToken")) {
-            const authParams = this._parseUrl();
-            if (authParams.accessToken && authParams.expirationTime) {
-                this._saveAuthParams(authParams);
-            } else {
-                this._fetchAccessTokenUrl(apiParams);
-            }
-        } else {
-            return window.localStorage.getItem('accessToken');
+            const accessTokenUrl = this._buildAccessTokenUrl(apiParams);
+            window.location.replace(accessTokenUrl);
         }
     },
 
-    _fetchAccessTokenUrl(apiParams) {
-        let url = apiParams.auth_url;
-        url += '?client_id=' + encodeURIComponent(apiParams.client_id);
-        url += '&response_type=token';
-        url += '&scope=' + encodeURIComponent(apiParams.scope);
-        url += '&redirect_uri=' + encodeURIComponent(apiParams.redirect_uri);
-        url += '&state=' + encodeURIComponent(apiParams.state);
-        window.location = url;
+    _parseAuthParams() {
+        const authParams = this._parseUrl();
+        if (authParams.accessToken && authParams.expirationTime) {
+            window.localStorage.setItem("accessToken", authParams.accessToken);
+            let expirationTime = Number(authParams.expirationTime);
+
+            window.setTimeout(() => {
+                window.localStorage.removeItem('accessToken');
+            }, expirationTime * 1000);
+        }
     },
 
     _parseUrl() {
@@ -33,14 +30,13 @@ export const SpotifyAuth = {
         };
     },
 
-    _saveAuthParams(authParams) {
-        window.localStorage.setItem("accessToken", authParams.accessToken);
-        let expirationTime = Number(authParams.expirationTime);
-
-        window.setTimeout(() => {
-            window.localStorage.removeItem('accessToken');
-        }, expirationTime * 1000);
-
-        window.history.pushState('Access Token', null, '/');
+    _buildAccessTokenUrl(apiParams) {
+        let url = apiParams.auth_url;
+        url += '?client_id=' + encodeURIComponent(apiParams.client_id);
+        url += '&response_type=token';
+        url += '&scope=' + encodeURIComponent(apiParams.scope);
+        url += '&redirect_uri=' + encodeURIComponent(apiParams.redirect_uri);
+        url += '&state=' + encodeURIComponent(apiParams.state);
+        return url;
     },
 }
