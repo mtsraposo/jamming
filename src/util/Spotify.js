@@ -63,7 +63,7 @@ export const Spotify = {
 
         const headers = this._buildHeaders();
 
-        const response = await fetch(track_url, {headers: headers})
+        const response = await fetch(track_url, {headers: headers});
         const responseJson = await this._checkResponse(response);
         const tracks = await this._parseResponse(responseJson);
 

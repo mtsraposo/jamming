@@ -2,19 +2,18 @@ export const SpotifyAuth = {
 
     async getAccessToken(apiParams) {
         if (!window.localStorage.getItem("accessToken")) {
-            const authParams = this.parseCurrentUrl();
+            const authParams = this._parseUrl();
             if (authParams.accessToken && authParams.expirationTime) {
-                this.saveAuthParams(authParams);
+                this._saveAuthParams(authParams);
             } else {
-                const authUrl = this.buildAccessTokenUrl(apiParams);
-                await fetch(authUrl, {redirect: 'follow'});
+                this._fetchAccessTokenUrl(apiParams);
             }
         } else {
             return window.localStorage.getItem('accessToken');
         }
     },
 
-    buildAccessTokenUrl(apiParams) {
+    _fetchAccessTokenUrl(apiParams) {
         let url = apiParams.auth_url;
         url += '?client_id=' + encodeURIComponent(apiParams.client_id);
         url += '&response_type=token';
@@ -22,10 +21,9 @@ export const SpotifyAuth = {
         url += '&redirect_uri=' + encodeURIComponent(apiParams.redirect_uri);
         url += '&state=' + encodeURIComponent(apiParams.state);
         window.location = url;
-        return url;
     },
 
-    parseCurrentUrl() {
+    _parseUrl() {
         const accessToken = window.location.href.match("#access_token=([^&]*)&");
         const expirationTime = window.location.href.match("&expires_in=([^&]*)&");
 
@@ -35,7 +33,7 @@ export const SpotifyAuth = {
         };
     },
 
-    saveAuthParams(authParams) {
+    _saveAuthParams(authParams) {
         window.localStorage.setItem("accessToken", authParams.accessToken);
         let expirationTime = Number(authParams.expirationTime);
 
