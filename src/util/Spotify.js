@@ -1,11 +1,11 @@
 export const Spotify = {
-    async savePlaylist(name, trackURIs, apiParams) {
-        if (!name || !trackURIs) {
+    async savePlaylist(name, tracks, apiParams) {
+        if (!name || !tracks) {
             return undefined;
         } else {
             let playlistId;
             playlistId = await this._createPlaylist(name, apiParams);
-            playlistId = await this._addTracksToPlaylist(trackURIs, apiParams, playlistId);
+            playlistId = await this._addTracksToPlaylist(tracks, apiParams, playlistId);
             return playlistId;
         }
     },
@@ -14,21 +14,14 @@ export const Spotify = {
         const userId = await this._getUserId(apiParams);
 
         const url = apiParams.create_playlist_url(userId);
-        const body = this._buildSavePlaylistBody(name);
+        const body = this._buildCreatePlaylistBody(name);
         const headers = {...this._buildHeaders(), 'Content-Type': 'application/json'};
-
-        console.log(userId, url, body, headers);
 
         const response = await fetch(url,
             {method: 'POST', body: body, headers: headers}
         );
-
-        if (response.ok) {
-            const responseJSON = await response.json();
-            return responseJSON['id'];
-        } else {
-            throw new Error(`Response status: ${response.status}`);
-        }
+        const responseJSON = await this._checkResponse(response);
+        return responseJSON['id'];
     },
 
     async _getUserId(apiParams) {
@@ -41,23 +34,28 @@ export const Spotify = {
         return responseJSON['id'];
     },
 
-    _buildSavePlaylistBody(name) {
+    _buildCreatePlaylistBody(name) {
         return JSON.stringify({
             name: name
         });
     },
 
-    async _addTracksToPlaylist(trackURIs, apiParams, playlistId) {
+    async _addTracksToPlaylist(tracks, apiParams, playlistId) {
         const url = apiParams.add_to_playlist_url(playlistId);
-        const body = JSON.stringify({
-            uris: trackURIs,
-        });
+        const headers = {...this._buildHeaders(), 'Content-Type': 'application/json'};
+        const body = this._buildSavePlaylistBody(tracks);
 
-        const response = await fetch(url, {method: 'POST', body: body});
-        const responseJSON = await response.json();
+        const response = await fetch(url, {method: 'POST', body: body, headers: headers});
+        const responseJSON = await this._checkResponse(response);
         return responseJSON['id'];
     },
 
+    _buildSavePlaylistBody(tracks) {
+        const trackURIs = tracks.map((track) => track.uri);
+        return JSON.stringify({
+            uris: trackURIs,
+        });
+    },
 
     async search(apiParams, term) {
         let track_url = this._buildTrackUrl(apiParams, term);
@@ -84,7 +82,6 @@ export const Spotify = {
     },
 
     _checkResponse(response) {
-        console.log(response);
         if (!response.ok) {
             throw new Error('Request unsuccessful');
         }
