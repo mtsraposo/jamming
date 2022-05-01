@@ -3,7 +3,8 @@ import {clientId} from "./credentials";
 
 export const apiParams = {
     client_id: clientId,
-    redirect_uri: 'http://ohmyjam.surge.sh',
+    // redirect_uri: 'http://ohmyjam.surge.sh',
+    redirect_uri: 'http://localhost:3000',
     scope: 'playlist-modify-public',
     state: generateRandomString(16),
     auth_url: 'https://accounts.spotify.com/authorize',

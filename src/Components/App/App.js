@@ -6,6 +6,7 @@ import Playlist from "../Playlist/Playlist";
 import {Spotify} from "../../util/Spotify";
 import {apiParams} from "../../util/api_parameters";
 import {SpotifyAuth} from "../../util/SpotifyAuth";
+import Login from "../Login/Login";
 
 class App extends React.Component {
     constructor(props) {
@@ -20,10 +21,6 @@ class App extends React.Component {
         this.updatePLaylistName = this.updatePLaylistName.bind(this);
         this.savePlaylist = this.savePlaylist.bind(this);
         this.search = this.search.bind(this);
-    }
-
-    async componentDidMount() {
-        await SpotifyAuth.getAccessToken(apiParams);
     }
 
     async search(term) {
@@ -83,7 +80,7 @@ class App extends React.Component {
             searchResults: this.state.searchResults,
             onAdd: this.addTrack,
             isRemoval: false,
-        };
+        }
 
         const playlistProps = {
             name: this.state.playlistName,
